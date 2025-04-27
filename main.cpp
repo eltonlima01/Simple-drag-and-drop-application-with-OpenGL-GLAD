@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "headers/headers.h"
 
 int main ()
@@ -24,11 +26,25 @@ int main ()
     }
 
     GLFWwindow *window = glfwCreateWindow (((3 * screenWidth) / 4), ((3 * screenHeight) / 4), "ver.0.0", NULL, NULL);
+    if (window == NULL)
+    {
+        std::cout << "GLFW::Falha ao criar janela\n";
+
+        glfwTerminate ();
+        return -1;
+    }
+    
     glfwMakeContextCurrent (window);
     glfwGetWindowSize (window, &windowWidth, &windowHeight);
     glfwSetFramebufferSizeCallback (window, framebuffer_size_callback);
 
-    gladLoadGLLoader ((GLADloadproc)glfwGetProcAddress);
+    if (!gladLoadGLLoader ((GLADloadproc)glfwGetProcAddress))
+    {
+        std::cout << "GLAD::Falha na inicialização\n";
+
+        glfwTerminate ();
+        return -1;
+    }
 
     unsigned int vShader = glCreateShader (GL_VERTEX_SHADER),
     fShader = glCreateShader (GL_FRAGMENT_SHADER),
@@ -39,11 +55,34 @@ int main ()
         glShaderSource (fShader, 1, &fShaderSource, NULL);
 
         glCompileShader (vShader);
+        glGetShaderiv (vShader, GL_COMPILE_STATUS, &success);
+
+        if (!success)
+        {
+            glGetShaderInfoLog (vShader, 512, NULL, infoLog);
+            std::cout << "SHADER::VERTEX::Falha na compilação\n" << infoLog << std::endl;
+        }
+
         glCompileShader (fShader);
+        glGetShaderiv (fShader, GL_COMPILE_STATUS, &success);
+
+        if (!success)
+        {
+            glGetShaderInfoLog (fShader, 512, NULL, infoLog);
+            std::cout << "SHADER::FRAGMENT::Falha na compilação\n" << infoLog << std::endl;
+        }
 
         glAttachShader (sProgram, vShader);
         glAttachShader (sProgram, fShader);
         glLinkProgram (sProgram);
+
+        glGetShaderiv (sProgram, GL_LINK_STATUS, &success);
+
+        if (!success)
+        {
+            glGetProgramInfoLog (sProgram, 512, NULL, infoLog);
+            std::cout << "SHADER::PROGRAM::Falha na ligação\n" << infoLog << std::endl;
+        }
 
         glDeleteShader (vShader);
         glDeleteShader (fShader);

@@ -1,8 +1,11 @@
 #define G 0.000025
 
 int t = 0;
+int success;
 int screenWidth, screenHeight,
 windowWidth = 0, windowHeight = 0;
+
+char infoLog [512];
 
 float vertices [] =
 {
